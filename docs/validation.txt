@@ -1,0 +1,8 @@
+PASS: recursive indexing, AND/case, wildcard, extensions, exclusion, quoted text, OR, folder/path filters, fuzzy subsequence/typo/Chinese, fuzzy precision, incremental create/rename/delete, persistence/replacement, subtree removal, path boundary.
+100,000 synthetic entries: strict query 23 ms; matches=280; fuzzy typo query 92 ms; matches=100000.
+PASS: real FileSystemWatcher creation, rename, delete; sidebar filters; confirmed fuzzy typo/subsequence queries; fuzzy toggle; no-result message; UI search updates; persisted cache deletion.
+PASS: normal Shown lifecycle, asynchronous cache loading, automatic rescan, search after startup, minimum-window layout.
+PASS: actual Windows recycle operation on a newly created unique test file; duplicate/empty/folder selection handling; missing file and backend directory rejection.
+PASS: isolated per-user install/reinstall/uninstall; installed SHA-256; version registration; Start Menu shortcut; installed search and startup tests; preservation of unknown files; running-app guard.
+Visual QA: normal, minimum window and empty-state previews inspected; all preview data is synthetic. Installer tests used an isolated registry key and temporary install folder. Windows signatures: application and installer are unsigned.
+PASS: portable ZIP payload hash; source ZIP extracted and independently rebuilt successfully.

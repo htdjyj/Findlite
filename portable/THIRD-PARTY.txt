@@ -1,0 +1,17 @@
+FindLite 1.0.0 - Third-party notices
+
+The Windows installer is built with unmodified NSIS 3.11.
+NSIS copyright: Copyright (C) 1999-2025 Contributors.
+The original NSIS COPYING text is supplied in 第三方许可-NSIS.txt.
+NSIS project: https://nsis.sourceforge.io/
+Unmodified source and releases: https://sourceforge.net/projects/nsis/files/NSIS%203/3.11/
+
+Build-tool archive source used for this release:
+https://github.com/tauri-apps/binary-releases/releases/download/nsis-3.11/nsis-3.11.zip
+SHA-256: c7d27f780ddb6cffb4730138cd1591e841f4b7edb155856901cdf5f214394fa1
+
+Microsoft .NET Framework and Windows Shell APIs are system prerequisites;
+their binaries are not bundled in this release.
+
+FindLite is independently implemented. No Everything executable, source code,
+icon, translation resource or installation package is redistributed here.

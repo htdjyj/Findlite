@@ -1,0 +1,21 @@
+# Generated applications and installation packages
+*.exe
+*.dll
+*.pdb
+*.zip
+*.tmp
+FindLite-error.txt
+artifacts/
+work/
+bin/
+obj/
+.vs/
+.idea/
+# Local caches and credentials
+index.json
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
