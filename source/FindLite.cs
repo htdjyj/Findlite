@@ -274,6 +274,8 @@ public class MainWindow : Form {
     readonly ListView results = new ResultList();
     readonly List<QuietButton> navigation = new List<QuietButton>();
     readonly ToolTip tips = new ToolTip();
+    readonly ContextMenuStrip moreMenu = new ContextMenuStrip();
+    readonly ContextMenuStrip resultMenu = new ContextMenuStrip();
     readonly Label emptyMessage = new Label();
     readonly Label status = new Label();
     readonly Label rootsLabel = new Label();
@@ -330,7 +332,7 @@ public class MainWindow : Form {
         header.Controls.Add(new BrandMark { Location=new Point(24,22),Size=new Size(38,38) });
         header.Controls.Add(new Label { Text="FindLite",Font=new Font("Segoe UI",18,FontStyle.Bold),ForeColor=Theme.Ink,AutoSize=true,Location=new Point(74,12) });
         header.Controls.Add(new Label { Text="寻文件 · 让查找更轻松",Font=new Font("Microsoft YaHei UI",8),ForeColor=Theme.Muted,AutoSize=true,Location=new Point(77,49) });
-        Label version=new Label { Text="本地运行  ·  v1.0.0",AutoSize=false,TextAlign=ContentAlignment.MiddleRight,ForeColor=Theme.Muted,Anchor=AnchorStyles.Top|AnchorStyles.Right,Location=new Point(header.Width-210,27),Size=new Size(180,28) };
+        Label version=new Label { Text="本地运行  ·  v1.0.1",AutoSize=false,TextAlign=ContentAlignment.MiddleRight,ForeColor=Theme.Muted,Anchor=AnchorStyles.Top|AnchorStyles.Right,Location=new Point(header.Width-210,27),Size=new Size(180,28) };
         header.Controls.Add(version); header.Resize+=delegate { version.Left=header.Width-210; }; frame.Controls.Add(header,0,0);
         TableLayoutPanel body=new TableLayoutPanel { Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty,BackColor=Color.FromArgb(247,249,247) };
         body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,196)); body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100)); frame.Controls.Add(body,0,1);
@@ -354,7 +356,11 @@ public class MainWindow : Form {
         Panel title=new Panel { Dock=DockStyle.Fill,Margin=Padding.Empty };
         title.Controls.Add(new Label { Text="文件搜索",AutoSize=true,Font=new Font("Microsoft YaHei UI",18,FontStyle.Bold),ForeColor=Theme.Ink,Location=new Point(-3,0) });
         title.Controls.Add(new Label { Text="从一个关键词，找到所需。",AutoSize=true,Font=new Font("Microsoft YaHei UI",9),ForeColor=Theme.Muted,Location=new Point(0,43) });
-        Button more=Button("更多  ···",delegate(object sender,EventArgs e) { ContextMenuStrip menu=new ContextMenuStrip(); menu.Items.Add("搜索语法",null,delegate { ShowSyntax(); }); menu.Items.Add("关于 FindLite",null,delegate { MessageBox.Show(this,"FindLite 1.0.0\n轻量本地文件搜索\n\n支持模糊搜索、文件类型筛选和回收站删除。\n文件名索引存储于本机，不上传文件或索引。","关于 FindLite",MessageBoxButtons.OK,MessageBoxIcon.Information); }); menu.Closed+=delegate { menu.Dispose(); }; menu.Show((Control)sender,new Point(0,38)); },false);
+        moreMenu.Items.Add("搜索语法",null,delegate { ShowSyntax(); });
+        moreMenu.Items.Add("关于 FindLite",null,delegate { MessageBox.Show(this,"FindLite 1.0.1\n轻量本地文件搜索\n\n支持模糊搜索、文件类型筛选和回收站删除。\n文件名索引存储于本机，不上传文件或索引。","关于 FindLite",MessageBoxButtons.OK,MessageBoxIcon.Information); });
+        // Closed fires before all WinForms menu/focus callbacks have finished.
+        // Reuse form-owned menus and dispose only with the owning window.
+        Button more=Button("更多  ···",delegate(object sender,EventArgs e) { if(!moreMenu.IsDisposed) moreMenu.Show((Control)sender,new Point(0,38)); },false);
         more.Width=88; more.Height=34; more.AutoSize=false; more.Anchor=AnchorStyles.Top|AnchorStyles.Right; title.Controls.Add(more); title.Resize+=delegate { more.Left=title.Width-more.Width; }; main.Controls.Add(title,0,0);
         TableLayoutPanel searchBox=new TableLayoutPanel { Dock=DockStyle.Fill,ColumnCount=3,RowCount=1,Padding=new Padding(14,11,12,10),Margin=new Padding(0,3,0,5),BackColor=Color.FromArgb(247,249,247) };
         searchBox.Paint+=delegate(object sender,PaintEventArgs e) { using(Pen p=new Pen(Theme.Line)) using(System.Drawing.Drawing2D.GraphicsPath path=Theme.Round(new RectangleF(.5f,.5f,searchBox.Width-1,searchBox.Height-1),10)) { e.Graphics.SmoothingMode=System.Drawing.Drawing2D.SmoothingMode.AntiAlias; e.Graphics.DrawPath(p,path); } };
@@ -382,7 +388,7 @@ public class MainWindow : Form {
         results.RetrieveVirtualItem+=delegate(object sender,RetrieveVirtualItemEventArgs e) { if(e.ItemIndex>=visible.Length) { e.Item=new ListViewItem(""); return; } FileEntry item=visible[e.ItemIndex]; e.Item=new ListViewItem(new string[]{item.Name,item.Parent,item.Folder?"文件夹":FormatSize(item.Size),item.Modified.ToString("yyyy-MM-dd HH:mm")}) { Tag=item }; };
         results.ColumnClick+=delegate(object sender,ColumnClickEventArgs e) { descending=sortColumn==e.Column?!descending:false; sortColumn=e.Column; Search(); };
         results.DoubleClick+=delegate { OpenSelected(false); }; results.KeyDown+=delegate(object sender,KeyEventArgs e) { if(e.KeyCode==Keys.Enter) OpenSelected(e.Control); if(e.Control&&e.KeyCode==Keys.C) CopySelected(); if(e.KeyCode==Keys.Delete) { e.Handled=true; e.SuppressKeyPress=true; DeleteSelected(); } };
-        ContextMenuStrip context=new ContextMenuStrip(); context.Items.Add("打开",null,delegate { OpenSelected(false); }); context.Items.Add("在资源管理器中定位",null,delegate { OpenSelected(true); }); context.Items.Add("复制完整路径",null,delegate { CopySelected(); }); context.Items.Add(new ToolStripSeparator()); context.Items.Add("移至回收站",null,delegate { DeleteSelected(); }); results.ContextMenuStrip=context;
+        resultMenu.Items.Add("打开",null,delegate { OpenSelected(false); }); resultMenu.Items.Add("在资源管理器中定位",null,delegate { OpenSelected(true); }); resultMenu.Items.Add("复制完整路径",null,delegate { CopySelected(); }); resultMenu.Items.Add(new ToolStripSeparator()); resultMenu.Items.Add("移至回收站",null,delegate { DeleteSelected(); }); results.ContextMenuStrip=resultMenu;
         Panel resultArea=new Panel { Dock=DockStyle.Fill,Margin=Padding.Empty,Padding=new Padding(1),BackColor=Theme.Line };
         emptyMessage.Dock=DockStyle.Fill; emptyMessage.TextAlign=ContentAlignment.MiddleCenter; emptyMessage.Font=new Font("Microsoft YaHei UI",11); emptyMessage.ForeColor=Theme.Muted; emptyMessage.BackColor=Color.White;
         resultArea.Controls.Add(results); resultArea.Controls.Add(emptyMessage); main.Controls.Add(resultArea,0,5); UpdateEmptyState(0);
@@ -394,6 +400,10 @@ public class MainWindow : Form {
     static extern IntPtr SetCueBanner(IntPtr handle,uint message,IntPtr wParam,string text);
     static void SetCueBanner(IntPtr handle,int unused,string text) { SetCueBanner(handle,0x1501,IntPtr.Zero,text); }
     void ShowSyntax() { MessageBox.Show(this,"空格：同时包含多个词\n|：或者\n!：排除\n双引号：包含空格的短语\n*.pdf：通配符\next:pdf;docx：扩展名\npath:Downloads：路径包含\ntype:folder / type:file：类型\n\n例如：报告 ext:pdf !草稿","搜索语法",MessageBoxButtons.OK,MessageBoxIcon.Information); }
+    protected override void Dispose(bool disposing) {
+        if(disposing) { moreMenu.Dispose(); resultMenu.Dispose(); tips.Dispose(); }
+        base.Dispose(disposing);
+    }
     static string FormatSize(long size) { if (size < 1024) return size + " B"; if (size < 1048576) return (size / 1024.0).ToString("0.#") + " KB"; if (size < 1073741824) return (size / 1048576.0).ToString("0.#") + " MB"; return (size / 1073741824.0).ToString("0.#") + " GB"; }
     void OnUI(Action action) { if (!life.IsCancellationRequested && !IsDisposed && IsHandleCreated) { try { BeginInvoke(action); } catch (InvalidOperationException) { } } }
     void UpdateRoots() { rootsLabel.Text = roots.Count == 0 ? "尚未添加索引范围 · 从左侧添加文件夹开始" : roots.Count + " 个索引位置  ·  " + string.Join("  ·  ", roots); tips.SetToolTip(rootsLabel,string.Join("\n",roots)); }
@@ -555,6 +565,27 @@ public class MainWindow : Form {
         if(confirmSearch.Width<70 || deleteFiles.Width<60 || navigation.Any(b=>b.Width<100)) throw new Exception("Small-window layout invalid");
         Close(); File.WriteAllText(System.IO.Path.Combine(directory,"startup-test-result.txt"),"PASS: normal Shown lifecycle, asynchronous cache loading, automatic rescan, search after startup, minimum-window layout.\r\n");
     }
+    public void MenuLifecycleTest(string directory) {
+        Directory.CreateDirectory(directory); Opacity=0; ShowInTaskbar=false;
+        Exception failure=null;
+        Shown+=delegate { BeginInvoke((Action)delegate { try {
+        int clicks=0; ToolStripMenuItem probe=new ToolStripMenuItem("Regression probe"); probe.Click+=delegate { clicks++; }; moreMenu.Items.Add(probe);
+        for(int i=0;i<40;i++) {
+            moreMenu.Show(this,new Point(250,120)); Application.DoEvents();
+            if(i%2==0) { probe.PerformClick(); moreMenu.Close(ToolStripDropDownCloseReason.ItemClicked); }
+            else moreMenu.Close(ToolStripDropDownCloseReason.Keyboard);
+            Application.DoEvents();
+            if(moreMenu.IsDisposed) throw new Exception("More menu was disposed during its close callback");
+            resultMenu.Show(results,new Point(20,20)); Application.DoEvents(); resultMenu.Close(ToolStripDropDownCloseReason.AppClicked); Application.DoEvents();
+            if(resultMenu.IsDisposed) throw new Exception("Result context menu disposed before window close");
+        }
+        if(clicks!=20) throw new Exception("Menu activation was not preserved");
+        } catch(Exception ex) { failure=ex; } finally { Close(); } }); };
+        Application.Run(this);
+        if(failure!=null) throw new Exception("Menu lifecycle regression failed",failure);
+        if(!moreMenu.IsDisposed||!resultMenu.IsDisposed) throw new Exception("Window-owned menus were not released on shutdown");
+        File.WriteAllText(System.IO.Path.Combine(directory,"menu-test-result.txt"),"PASS: 40 More-menu open/close cycles; item activation and keyboard dismissal; 40 result-menu dismissals; menus retained during close events and disposed with their window.\r\n");
+    }
 }
 public static class Program {
     static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
@@ -611,6 +642,7 @@ public static class Program {
             Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
             if (args.Length == 2 && args[0] == "--ui-test") { using (MainWindow window = new MainWindow(false, System.IO.Path.Combine(args[1], "ui-cache", "index.json"))) window.IntegrationTest(args[1]); return 0; }
             if (args.Length == 2 && args[0] == "--startup-test") { using (MainWindow window = new MainWindow(false, System.IO.Path.Combine(args[1], "startup-cache", "index.json"))) window.StartupTest(args[1]); return 0; }
+            if (args.Length == 2 && args[0] == "--menu-test") { using (MainWindow window = new MainWindow(true)) window.MenuLifecycleTest(args[1]); return 0; }
             if (args.Length == 2 && args[0] == "--preview") { using (MainWindow window = new MainWindow(true)) window.Preview(args[1]); return 0; }
             if (args.Length == 2 && args[0] == "--preview-empty") { using (MainWindow window = new MainWindow(true)) window.Preview(args[1], true); return 0; }
             if (args.Length == 2 && args[0] == "--preview-small") { using (MainWindow window = new MainWindow(true)) { window.ClientSize=new Size(1000,640); window.Preview(args[1]); } return 0; }

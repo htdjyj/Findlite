@@ -71,9 +71,11 @@ cd findlite
 $testRoot = Join-Path $env:TEMP ('FindLite-test-' + [guid]::NewGuid().ToString('N'))
 Start-Process .\portable\FindLite.exe -ArgumentList @('--self-test', $testRoot) -Wait
 Start-Process .\portable\FindLite.exe -ArgumentList @('--ui-test', $testRoot) -Wait
+Start-Process .\portable\FindLite.exe -ArgumentList @('--startup-test', $testRoot) -Wait
+Start-Process .\portable\FindLite.exe -ArgumentList @('--menu-test', $testRoot) -Wait
 ```
 
-测试涵盖查询语法、模糊匹配、排序所依赖的索引、文件监听及 UI 同步。历史本地验证记录见 [docs/validation.txt](docs/validation.txt)。未声称在所有 Windows 版本与硬件组合上完成验证。
+测试涵盖查询语法、模糊匹配、排序所依赖的索引、文件监听、UI 同步、启动和菜单生命周期。历史本地验证记录见 [docs/validation.txt](docs/validation.txt)。未声称在所有 Windows 版本与硬件组合上完成验证。
 
 ## 贡献
 

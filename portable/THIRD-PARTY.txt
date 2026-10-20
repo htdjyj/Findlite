@@ -1,4 +1,4 @@
-FindLite 1.0.0 - Third-party notices
+FindLite 1.0.1 - Third-party notices
 
 The Windows installer is built with unmodified NSIS 3.11.
 NSIS copyright: Copyright (C) 1999-2025 Contributors.

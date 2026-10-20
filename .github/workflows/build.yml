@@ -30,7 +30,7 @@ jobs:
         shell: pwsh
         run: |
           $root = Join-Path $env:RUNNER_TEMP 'findlite-tests'
-          foreach ($mode in @('--self-test', '--ui-test', '--startup-test')) {
+          foreach ($mode in @('--self-test', '--ui-test', '--startup-test', '--menu-test')) {
             $process = Start-Process (Resolve-Path .\portable\FindLite.exe) -ArgumentList @($mode,$root) -Wait -PassThru
             if ($process.ExitCode -ne 0) { throw "$mode failed" }
           }
@@ -38,9 +38,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory artifacts | Out-Null
-          Copy-Item FindLite-1.0.0-Setup-x64.exe artifacts
-          Compress-Archive portable\* artifacts\FindLite-1.0.0-Windows-x64.zip
-          git archive --format=zip --output=artifacts/FindLite-1.0.0-Source.zip HEAD
+          Copy-Item FindLite-1.0.1-Setup-x64.exe artifacts
+          Compress-Archive portable\* artifacts\FindLite-1.0.1-Windows-x64.zip
+          git archive --format=zip --output=artifacts/FindLite-1.0.1-Source.zip HEAD
           Get-ChildItem artifacts -File | ForEach-Object { '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(),$_.Name } | Set-Content artifacts\SHA256SUMS.txt -Encoding utf8
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -48,7 +48,7 @@ jobs:
           path: artifacts/*
 
   release:
-    if: github.event_name != 'pull_request' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.event.head_commit.message == 'Release FindLite v1.0.0')
+    if: github.event_name != 'pull_request' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.event.head_commit.message == 'Release FindLite v1.0.1')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -66,8 +66,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if gh release view v1.0.0 >/dev/null 2>&1; then
-            echo 'v1.0.0 already exists; published assets are left unchanged.'
+          if gh release view v1.0.1 >/dev/null 2>&1; then
+            echo 'v1.0.1 already exists; published assets are left unchanged.'
           else
-            gh release create v1.0.0 artifacts/* --target "$COMMIT_SHA" --title 'FindLite 1.0.0' --notes 'MIT 开源首发版本。支持 Windows 10/11 x64，需要 .NET Framework 4.8+。包含安装版、免安装版和源码包。文件名搜索、模糊匹配、侧栏分类、文件监听、确认后回收站删除和 CSV 导出。安装包未做代码签名；首次索引采用目录遍历，尚无 MFT/USN 索引。'
+            gh release create v1.0.1 artifacts/* --target "$COMMIT_SHA" --title 'FindLite 1.0.1' --notes '修复关闭“更多”菜单后可能出现的 ContextMenuStrip 已释放异常，并增加菜单生命周期回归测试。MIT 开源。支持 Windows 10/11 x64，需要 .NET Framework 4.8+。包含安装版、免安装版和源码包。文件名搜索、模糊匹配、侧栏分类、文件监听、确认后回收站删除和 CSV 导出。安装包未做代码签名；首次索引采用目录遍历，尚无 MFT/USN 索引。'
           fi
